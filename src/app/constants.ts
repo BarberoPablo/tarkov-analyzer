@@ -4,6 +4,9 @@ export const specialWords: { [key: string]: string | undefined } = {
   backpack: undefined,
   tactical: undefined,
   rig: undefined,
+  "aa battery": "AA batt.",
+  pnwde215: "pnwde 215",
+  batt: "AA batt.",
   nalls: "Nails",
   gmtube: "MTube",
   miube: "Mtube",
@@ -39,9 +42,9 @@ export const specialWords: { [key: string]: string | undefined } = {
   mscissars: "MScissors",
   mseissors: "MScissors",
   milape: "MTape",
+  jape: "Tape",
   meetin: "TG meeting",
   syginge: "Syringe",
-  batt: "AA Battery",
   ofuel: "DFuel",
   lms: "CMS",
   ezripstop: "Ripstop",
@@ -53,6 +56,9 @@ export const specialWords: { [key: string]: string | undefined } = {
   beard0oll: "BeardOil",
   aceess: "Access",
   lamp: "ES Lamp",
+  survi2: "Surv12",
+  boits: "Bolts",
+  "4bulb": "Bulb",
 };
 
 /*  Data from:

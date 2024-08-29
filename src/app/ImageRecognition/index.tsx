@@ -26,9 +26,10 @@ const preprocessImage = async (imageSrc: string) => {
 
   for (let i = 0; i < data.length; i += 4) {
     const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    data[i] = avg; // Red
-    data[i + 1] = avg; // Green
-    data[i + 2] = avg; // Blue
+    const contrastFactor = 1.5; // Ajusta este valor según sea necesario
+    data[i] = Math.min(255, avg * contrastFactor);
+    data[i + 1] = Math.min(255, avg * contrastFactor);
+    data[i + 2] = Math.min(255, avg * contrastFactor);
   }
 
   ctx.putImageData(imageData, 0, 0);
@@ -68,8 +69,7 @@ export default function ImageRecognition() {
       try {
         const {
           data: { words },
-        } = await Tesseract.recognize(await preprocessImage(inventoryImage), "eng");
-
+        } = await Tesseract.recognize(await preprocessImage(inventoryImage));
         // Extrae las frases y sus coordenadas
         const detectedItems = findItems(words);
 
@@ -114,15 +114,6 @@ export default function ImageRecognition() {
     >
       <p>Paste image here (click and CTRL + V)</p>
       <div style={{ position: "relative", width: "100%", height: "100%" }}>
-        {/* <img
-          src={inventoryImage}
-          alt="user inventory"
-          style={{
-            width: "200%", // Asegura que la imagen se vea el doble de grande
-            height: "auto", // Mantiene la proporción de la imagen
-            imageRendering: "crisp-edges",
-          }}
-        /> */}
         {inventoryImage && (
           <Img
             src={inventoryImage}
@@ -130,18 +121,11 @@ export default function ImageRecognition() {
             style={{
               width: "100%", // Ajusta el tamaño deseado
               height: "auto",
-              //imageRendering: "pixelated",
+              imageRendering: "crisp-edges",
             }}
             loader={<div>Loading...</div>} // Placeholder mientras carga la imagen
           />
         )}
-        {/* {Object.keys(itemsDetected).length > 0 && (
-          <div>
-            {Object.values(itemsDetected).map((item) => (
-              <p key={item.id}>{item.name}</p>
-            ))}
-          </div>
-        )} */}
 
         {Object.values(itemsDetected).map((item, index) => (
           <p

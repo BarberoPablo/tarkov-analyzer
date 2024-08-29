@@ -28,17 +28,3 @@ function getRealWord(word: string) {
   const newWord = specialWords[word.toLowerCase()];
   return newWord || word;
 }
-
-/* array of coords
-if (itemFound) {
-        if (detected[itemFound.id]) {
-          detected[itemFound.id] = {
-            ...detected[itemFound.id],
-            coords: [...detected[itemFound.id].coords, { x: word.bbox.x0, y: word.bbox.y0 }],
-          };
-        } else {
-          detected[itemFound.id] = { ...itemFound, coords: [{ x: word.bbox.x0, y: word.bbox.y0 }] };
-        }
-      }
-
-*/
