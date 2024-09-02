@@ -39,12 +39,12 @@ const preprocessImage = async (imageSrc: string) => {
 
 export default function ImageRecognition() {
   const [inventoryImage, setInventoryImage] = useState<string | null>(null);
-  const [itemsDetected, setItemsDetected] = useState<{ [id: string]: ItemData }>({});
+  const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
 
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
 
-    setItemsDetected({});
+    setItemsDetected([]);
 
     const userInventory = event.clipboardData.items;
     for (const item of userInventory) {
@@ -82,26 +82,9 @@ export default function ImageRecognition() {
     }
   };
 
-  /* fetch("https://api.tarkov.dev/graphql", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify({
-      query: `{
-      item(id: "54527ac44bdc2d36668b4567") {
-          all
-      }
-  }`,
-    }),
-  })
-    .then((r) => r.json())
-    .then((data) => console.log("data returned:", data)); */
-
   const calculateTotalValue = () => {
     let total = 0;
-    Object.values(itemsDetected).forEach((item) => {
+    itemsDetected.forEach((item) => {
       total += item.avg24hPrice || 0;
     });
     return total;
@@ -127,7 +110,7 @@ export default function ImageRecognition() {
           />
         )}
 
-        {Object.values(itemsDetected).map((item, index) => (
+        {itemsDetected.map((item, index) => (
           <p
             key={item.id + index}
             style={{
@@ -150,7 +133,7 @@ export default function ImageRecognition() {
         ))}
       </div>
 
-      {Object.values(itemsDetected).length > 0 && <p>Total Inventory Value: ${calculateTotalValue()}</p>}
+      {itemsDetected.length > 0 && <p>Total Inventory Value: ${calculateTotalValue()}</p>}
 
       <button onClick={handleDetectItems}>Detect Items</button>
     </div>
