@@ -1,17 +1,65 @@
 import { allItems, specialWords } from "./constants";
-import { ItemData } from "./types";
+import { FleaMarketItem, ItemData } from "./types";
 
 //Compare with shortName and return the full name (name)
 export function findItems(words: Tesseract.Word[]) {
   //const detected: { [id: string]: ItemData } = {};
   const detected: ItemData[] = [];
+  let itemFound: FleaMarketItem | undefined = undefined;
 
-  words.forEach((word /* index */) => {
-    const parsedWord = getRealWord(word.text.replace(/[^a-zA-Z0-9\s-]/g, "").trim());
+  words.forEach((word, index) => {
+    const parsedWord = word.text.length > 0 && getRealWord(word.text.replace(/[^a-zA-Z0-9\s-]/g, "").trim());
+    let previousItem: FleaMarketItem | undefined = undefined;
 
-    if (parsedWord?.length > 2) {
+    if (parsedWord && parsedWord?.length < 3 && index > 0 && index < words.length - 1) {
+      console.log("SHORT WORD: ", parsedWord);
+      const possibleItemNames: string[] = [];
+
+      const previousWord = words[index - 1].text
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .toLowerCase()
+        .trim();
+      const nextWord = words[index + 1].text
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .toLowerCase()
+        .trim();
+
+      //If the previousItem was a founded item then dont use it to generate a possible new item
+      if (!previousItem && previousWord && previousWord.length + parsedWord.length > 3) {
+        possibleItemNames.push(getRealWord(`${previousWord} ${parsedWord}`));
+        possibleItemNames.push(getRealWord(`${previousWord}-${parsedWord}`));
+      }
+
+      if (nextWord && nextWord.length + parsedWord.length > 3) {
+        possibleItemNames.push(getRealWord(`${parsedWord} ${nextWord}`));
+        possibleItemNames.push(getRealWord(`${parsedWord}-${nextWord}`));
+      }
+
+      possibleItemNames.forEach((possibleItemName) => {
+        itemFound = allItems.find((item) => {
+          return (
+            (possibleItemNames.includes(item.shortName.toLowerCase()) || possibleItemNames.includes(item.shortName)) &&
+            possibleItemName.length + 2 > item.shortName.length &&
+            !item.name.includes("ammo pack")
+          );
+        });
+
+        if (itemFound?.shortName) {
+          console.log(`%c${possibleItemName} | ${itemFound?.shortName}`, "color: green");
+          previousItem = itemFound;
+          console.log("Setting previous item: ", previousItem.shortName);
+        } else {
+          console.log(`%c${possibleItemName} | ${itemFound?.shortName}`, "color: red");
+          previousItem = undefined;
+        }
+      });
+    }
+
+    if (parsedWord && parsedWord?.length >= 3) {
       //To avoid finding ammo packs lets search for the items that does not includes "ammo"
-      const itemFound = allItems.find((item) => {
+      console.log("LONG WORD: ", parsedWord);
+
+      itemFound = allItems.find((item) => {
         return (
           parsedWord.length + 2 > item.shortName.length &&
           item.shortName.toLowerCase().includes(parsedWord.toLowerCase()) &&
@@ -24,47 +72,36 @@ export function findItems(words: Tesseract.Word[]) {
       } else {
         console.log(`%c${parsedWord} | ${itemFound?.shortName}`, "color: red");
       }
+    }
 
-      if (itemFound) {
-        let sameItem = false;
-        if (detected.length > 0) {
-          /* if(words[index-1]){
-          } */
-          const lastItemDetected = detected[detected.length - 1];
-          console.log(lastItemDetected);
-          if (Math.abs(lastItemDetected.coords.x - word.bbox.x0) < 90 && Math.abs(lastItemDetected.coords.y - word.bbox.y0) < 10) {
-            console.log(`Same item`);
-            sameItem = true;
-          } else {
-            console.log("Different item");
-          }
-        }
+    if (itemFound) {
+      let sameItem = false;
+      if (detected.length > 0) {
+        const lastItemDetected = detected[detected.length - 1];
 
-        if (!sameItem) {
-          detected.push({ ...itemFound, coords: { x: word.bbox.x0, y: word.bbox.y0 } });
+        if (
+          lastItemDetected.shortName.toLowerCase() === parsedWord &&
+          Math.abs(lastItemDetected.coords.x - word.bbox.x0) < 90 &&
+          Math.abs(lastItemDetected.coords.y - word.bbox.y0) < 100
+        ) {
+          sameItem = true;
         }
       }
 
-      /* 
-        if the previous item is the same as the one here, calculate the coords to check if its the same item
-        (65,774) vs (141,774) | dif = (76,0)
+      if (!sameItem) {
+        console.log(`%c${itemFound.shortName}`, `color: purple`);
 
-        Nails vs Meds
-        (118,585) vs (299,585) | dif = (181,0)
-        
-        Ripstop vs Matches
-        (261,396) vs (434,396) | dif = (173,0)
-        
-
-      */
+        detected.push({ ...itemFound, coords: { x: word.bbox.x0, y: word.bbox.y0 } });
+      }
     }
+    itemFound = undefined;
   });
 
   return detected;
 }
 
 function getRealWord(word: string) {
-  const newWord = specialWords[word.toLowerCase()];
-
-  return newWord || word;
+  const newWord = specialWords[word.toLowerCase()] || word.toLowerCase();
+  console.log("Getting real Word: ", word, " => ", newWord);
+  return newWord;
 }

@@ -22,6 +22,7 @@ const preprocessImage = async (imageSrc: string) => {
   ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
   const imageData = ctx.getImageData(0, 0, newWidth, newHeight);
+
   const data = imageData.data;
 
   for (let i = 0; i < data.length; i += 4) {
@@ -73,6 +74,7 @@ export default function ImageRecognition() {
         // Extrae las frases y sus coordenadas
         const detectedItems = findItems(words);
 
+        console.log({ words });
         console.log({ detectedItems });
 
         setItemsDetected(detectedItems);

@@ -26,6 +26,7 @@ export const specialWords: { [key: string]: string | undefined } = {
   krasawch: "Krasavch.",
   //ALL THE KEYS SHOULD BE IN LOWERCASE
   krasaveh: "Krasavch.",
+  krasaven: "krasavch.",
   schews: "Screws",
   schrews: "Screws",
   saat: "Salt",
@@ -48,6 +49,7 @@ export const specialWords: { [key: string]: string | undefined } = {
   meetin: "TG meeting",
   syginge: "Syringe",
   ofuel: "DFuel",
+  dfuell: "DFuel",
   lms: "CMS",
   ezripstop: "Ripstop",
   cpu: "CPU fan",
@@ -57,12 +59,22 @@ export const specialWords: { [key: string]: string | undefined } = {
   alkall: "Alkali",
   beard0oll: "BeardOil",
   aceess: "Access",
-  lamp: "ES Lamp",
+  //lamp: "ES Lamp",
   survi2: "Surv12",
   boits: "Bolts",
   "4bulb": "Bulb",
   //ALL THE KEYS SHOULD BE IN LOWERCASE
   m8s5: "M855",
+  hydrassho: "HydraSho",
+  rpllers: "RPliers",
+  cru: "CPU",
+  r025: "RDG-2B",
+  "ro5-28": "RDG-2B",
+  ductytape: "Duct tape",
+  poxegam: "Poxeram",
+  rge28: "RG028",
+  bangage: "Bandage",
+  "ov lampl": "UV Lamp",
 };
 
 /*  Data from:
