@@ -2,8 +2,9 @@ import { allItems, specialWords } from "./constants";
 import { FleaMarketItem, ItemData } from "./types";
 
 //Compare with shortName and return the full name (name)
+const coordThreshold = 90;
+
 export function findItems(words: Tesseract.Word[]) {
-  //const detected: { [id: string]: ItemData } = {};
   const detected: ItemData[] = [];
   let itemFound: FleaMarketItem | undefined = undefined;
 
@@ -12,9 +13,7 @@ export function findItems(words: Tesseract.Word[]) {
     let previousItem: FleaMarketItem | undefined = undefined;
 
     if (parsedWord && parsedWord?.length < 3 && index > 0 && index < words.length - 1) {
-      console.log("SHORT WORD: ", parsedWord);
       const possibleItemNames: string[] = [];
-
       const previousWord = words[index - 1].text
         .replace(/[^a-zA-Z0-9\s-]/g, "")
         .toLowerCase()
@@ -47,7 +46,6 @@ export function findItems(words: Tesseract.Word[]) {
         if (itemFound?.shortName) {
           console.log(`%c${possibleItemName} | ${itemFound?.shortName}`, "color: green");
           previousItem = itemFound;
-          console.log("Setting previous item: ", previousItem.shortName);
         } else {
           console.log(`%c${possibleItemName} | ${itemFound?.shortName}`, "color: red");
           previousItem = undefined;
@@ -57,8 +55,6 @@ export function findItems(words: Tesseract.Word[]) {
 
     if (parsedWord && parsedWord?.length >= 3) {
       //To avoid finding ammo packs lets search for the items that does not includes "ammo"
-      console.log("LONG WORD: ", parsedWord);
-
       itemFound = allItems.find((item) => {
         return (
           parsedWord.length + 2 > item.shortName.length &&
@@ -81,8 +77,8 @@ export function findItems(words: Tesseract.Word[]) {
 
         if (
           lastItemDetected.shortName.toLowerCase() === parsedWord &&
-          Math.abs(lastItemDetected.coords.x - word.bbox.x0) < 90 &&
-          Math.abs(lastItemDetected.coords.y - word.bbox.y0) < 100
+          Math.abs(lastItemDetected.coords.x - word.bbox.x0) < coordThreshold &&
+          Math.abs(lastItemDetected.coords.y - word.bbox.y0) < coordThreshold
         ) {
           sameItem = true;
         }
@@ -102,6 +98,31 @@ export function findItems(words: Tesseract.Word[]) {
 
 function getRealWord(word: string) {
   const newWord = specialWords[word.toLowerCase()] || word.toLowerCase();
-  console.log("Getting real Word: ", word, " => ", newWord);
   return newWord;
+}
+
+export function removeDuplicatedItems(items: ItemData[]) {
+  const uniqueItems: ItemData[] = [];
+
+  items.forEach((item) => {
+    const findItems = uniqueItems.filter((uniqueItem) => uniqueItem.shortName === item.shortName);
+
+    if (findItems.length === 0) {
+      uniqueItems.push(item);
+    } else {
+      //compare coords
+      let isNewItem = true;
+      findItems.forEach((findItem) => {
+        if (Math.abs(findItem.coords.x - item.coords.x) < coordThreshold && Math.abs(findItem.coords.y - item.coords.y) < coordThreshold) {
+          isNewItem = false;
+        }
+      });
+
+      if (isNewItem) {
+        uniqueItems.push(item);
+      }
+    }
+  });
+
+  return uniqueItems;
 }
