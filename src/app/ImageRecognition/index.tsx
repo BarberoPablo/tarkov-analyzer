@@ -6,12 +6,17 @@ import { ItemData } from "../types";
 import { Img } from "react-image";
 
 const multiplier = 3;
+let imageFullWidth = 0;
+let imageFullHeight = 0;
 
 const preprocessImage = async (imageSrc: string, avgMin: number) => {
   const img = await loadImage(imageSrc);
 
   const newWidth = img.width * multiplier;
   const newHeight = img.height * multiplier;
+
+  imageFullWidth = newWidth;
+  imageFullHeight = newHeight;
 
   const canvas = createCanvas(newWidth, newHeight);
   const ctx = canvas.getContext("2d");
@@ -129,8 +134,8 @@ export default function ImageRecognition() {
             style={{
               position: "absolute",
               width: "50px",
-              top: (item.coords.y / multiplier) * 1.2,
-              left: (item.coords.x / multiplier) * 1.2,
+              top: (item.coords.y * 100) / imageFullHeight + "%",
+              left: (item.coords.x * 100) / imageFullWidth + "%",
               fontSize: "12px",
               color: "white",
               backgroundColor: "black",
