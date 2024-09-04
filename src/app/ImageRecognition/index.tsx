@@ -1,9 +1,9 @@
-import { ClipboardEvent, useState } from "react";
-import Tesseract from "tesseract.js";
 import { createCanvas, loadImage } from "canvas";
-import { findItems, removeDuplicatedItems } from "../utils";
-import { ItemData } from "../types";
+import { ClipboardEvent, useState } from "react";
 import { Img } from "react-image";
+import Tesseract from "tesseract.js";
+import { ItemData } from "../types";
+import { findItems, removeDuplicatedItems } from "../utils";
 
 const multiplier = 3;
 let imageFullWidth = 0;
@@ -104,68 +104,92 @@ export default function ImageRecognition() {
 
   return (
     <div
-      onPaste={handlePaste}
       style={{
         width: "100%",
+        height: "90vh",
         display: "flex",
-        flexDirection: "column",
-        border: "2px dashed #ccc",
-        padding: "20px",
-        textAlign: "center",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+        gap: "20px",
       }}
     >
-      <p>Paste image here (click and CTRL + V)</p>
-      <div style={{ position: "relative", display: "flex", flexDirection: "row", width: "100%", height: "100%" }}>
-        {inventoryImage && (
-          <Img
-            src={inventoryImage}
-            alt="user inventory"
-            style={{
-              width: "100%",
-              height: "auto",
-            }}
-            loader={<div>Loading...</div>}
-          />
-        )}
+      <div
+        onPaste={handlePaste}
+        style={{
+          width: "50%",
+          display: "flex",
+          flexDirection: "column",
+          border: "2px dashed #ccc",
+          padding: "20px",
+          textAlign: "center",
+        }}
+      >
+        <p>Paste image here (click and CTRL + V)</p>
 
-        {itemsDetected.map((item, index) => (
-          <p
-            key={item.id + index}
-            style={{
-              position: "absolute",
-              width: "50px",
-              top: (item.coords.y * 100) / imageFullHeight + "%",
-              left: (item.coords.x * 100) / imageFullWidth + "%",
-              fontSize: "12px",
-              color: "white",
-              backgroundColor: "black",
-              fontWeight: "bold",
-              border: "1px solid crimson",
-              padding: "2px 4px",
-              filter: "drop-shadow(3px 3px 3px black)",
-              transform: "translate(-50%, -50%)", // Para centrar el texto en las coordenadas
-            }}
-          >
-            {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
-          </p>
-        ))}
+        <div style={{ position: "relative", display: "flex", flexDirection: "row", width: "100%", height: "100%" }}>
+          {inventoryImage && (
+            <Img
+              src={inventoryImage}
+              alt="user inventory"
+              style={{
+                width: "100%",
+                height: "auto",
+              }}
+              loader={<div>Loading...</div>}
+            />
+          )}
+
+          {itemsDetected.map((item, index) => (
+            <p
+              key={item.id + index}
+              style={{
+                position: "absolute",
+                width: "50px",
+                top: (item.coords.y * 100) / imageFullHeight + "%",
+                left: (item.coords.x * 100) / imageFullWidth + "%",
+                fontSize: "12px",
+                color: "white",
+                backgroundColor: "black",
+                fontWeight: "bold",
+                border: "1px solid crimson",
+                padding: "2px 4px",
+                filter: "drop-shadow(3px 3px 3px black)",
+                transform: "translate(-50%, -50%)", // Para centrar el texto en las coordenadas
+              }}
+            >
+              {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
+            </p>
+          ))}
+        </div>
+
+        {itemsDetected.length > 0 ? (
+          <p>{inventoryLoading ? "Loading..." : `Total Inventory Value: $${calculateTotalValue()}`}</p>
+        ) : (
+          <p>Select a scan</p>
+        )}
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+          <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 70])}>
+            Quick Scan
+          </button>
+          <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 90, 100])}>
+            Balanced Scan
+          </button>
+          <button disabled={!inventoryImage} onClick={() => handleDetectItems([70, 80, 90, 100, 110])}>
+            Deep Scan
+          </button>
+        </div>
       </div>
 
-      {itemsDetected.length > 0 ? (
-        <p>{inventoryLoading ? "Loading..." : `Total Inventory Value: $${calculateTotalValue()}`}</p>
-      ) : (
-        <p>Select a scan</p>
-      )}
-      <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-        <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 100])}>
-          Quick Scan
-        </button>
-        <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 90, 100])}>
-          Balanced Scan
-        </button>
-        <button disabled={!inventoryImage} onClick={() => handleDetectItems([70, 80, 90, 100, 110])}>
-          Deep Scan
-        </button>
+      <div style={{ width: 900, height: "100%" }}>
+        <iframe
+          src="https://tarkov-market.com/"
+          title="Tarkov Market"
+          width="100%"
+          height="100%"
+          style={{ border: "none" }}
+          allowFullScreen
+        ></iframe>
       </div>
     </div>
   );
