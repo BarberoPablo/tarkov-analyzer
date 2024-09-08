@@ -106,7 +106,8 @@ export default function ImageRecognition() {
     <div
       style={{
         width: "100%",
-        height: "90vh",
+        height: "95vh",
+        maxHeight: "100%",
         display: "flex",
         flexDirection: "row",
         justifyContent: "center",
@@ -118,11 +119,13 @@ export default function ImageRecognition() {
         onPaste={handlePaste}
         style={{
           width: "50%",
+          height: "90%",
           display: "flex",
           flexDirection: "column",
           border: "2px dashed #ccc",
           padding: "20px",
           textAlign: "center",
+          overflow: "auto",
         }}
       >
         <p>Paste image here (click and CTRL + V)</p>

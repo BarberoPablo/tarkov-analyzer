@@ -1,12 +1,12 @@
 To update gh-pages:
 
-1. npm run build
+npm run build
 
-2. git add dist -f
+git add dist -f
 
-3. git commit -m "dist folder"
+git commit -m "dist folder"
 
-4. git subtree push --prefix dist origin gh-pages
+git subtree push --prefix dist origin gh-pages
 
 # React + TypeScript + Vite
 
