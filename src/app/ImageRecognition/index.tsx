@@ -1,22 +1,17 @@
 import { createCanvas, loadImage } from "canvas";
 import { ClipboardEvent, useState } from "react";
-import { Img } from "react-image";
 import Tesseract from "tesseract.js";
 import { ItemData } from "../types";
 import { findItems, removeDuplicatedItems } from "../utils";
+import "./styles.css";
 
 const multiplier = 3;
-let imageFullWidth = 0;
-let imageFullHeight = 0;
 
 const preprocessImage = async (imageSrc: string, avgMin: number) => {
   const img = await loadImage(imageSrc);
 
   const newWidth = img.width * multiplier;
   const newHeight = img.height * multiplier;
-
-  imageFullWidth = newWidth;
-  imageFullHeight = newHeight;
 
   const canvas = createCanvas(newWidth, newHeight);
   const ctx = canvas.getContext("2d");
@@ -103,45 +98,12 @@ export default function ImageRecognition() {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "95vh",
-        maxHeight: "100%",
-        display: "flex",
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        gap: "20px",
-      }}
-    >
-      <div
-        onPaste={handlePaste}
-        style={{
-          width: "50%",
-          height: "90%",
-          display: "flex",
-          flexDirection: "column",
-          border: "2px dashed #ccc",
-          padding: "20px",
-          textAlign: "center",
-          overflow: "auto",
-        }}
-      >
+    <div className="container">
+      <div onPaste={handlePaste} className="inventoryContainer">
         <p>Paste image here (click and CTRL + V)</p>
 
-        <div style={{ position: "relative", display: "flex", flexDirection: "row", width: "100%", height: "100%" }}>
-          {inventoryImage && (
-            <Img
-              src={inventoryImage}
-              alt="user inventory"
-              style={{
-                width: "100%",
-                height: "auto",
-              }}
-              loader={<div>Loading...</div>}
-            />
-          )}
+        <div style={{ position: "relative", display: "block", justifyContent: "center", margin: "0 auto" }}>
+          {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
 
           {itemsDetected.map((item, index) => (
             <p
@@ -149,16 +111,15 @@ export default function ImageRecognition() {
               style={{
                 position: "absolute",
                 width: "50px",
-                top: (item.coords.y * 100) / imageFullHeight + "%",
-                left: (item.coords.x * 100) / imageFullWidth + "%",
+                top: item.coords.y / multiplier + "px",
+                left: item.coords.x / multiplier + "px",
                 fontSize: "12px",
                 color: "white",
                 backgroundColor: "black",
-                fontWeight: "bold",
                 border: "1px solid crimson",
                 padding: "2px 4px",
                 filter: "drop-shadow(3px 3px 3px black)",
-                transform: "translate(-50%, -50%)", // Para centrar el texto en las coordenadas
+                transform: "translate(-40%, 0%)", // Para centrar el texto en las coordenadas
               }}
             >
               {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
