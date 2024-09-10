@@ -1,15 +1,15 @@
 import { createCanvas, loadImage } from "canvas";
-import { ClipboardEvent, useState } from "react";
+import { ClipboardEvent, useMemo, useState } from "react";
 import Tesseract from "tesseract.js";
 import { ItemData } from "../types";
 import { findItems, removeDuplicatedItems } from "../utils";
+import PriceButton from "./components/priceButton";
 import "./styles.css";
 
 const multiplier = 3;
 
 const preprocessImage = async (imageSrc: string, avgMin: number) => {
   const img = await loadImage(imageSrc);
-
   const newWidth = img.width * multiplier;
   const newHeight = img.height * multiplier;
 
@@ -37,6 +37,20 @@ export default function ImageRecognition() {
   const [inventoryImage, setInventoryImage] = useState<string | null>(null);
   const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
+  const [highestZIndex, setHighestZIndex] = useState(0);
+
+  const scanButtons = useMemo(
+    () => [
+      { text: "Quick scan", greyScale: [80, 70] },
+      { text: "Balanced Scan", greyScale: [80, 90, 100] },
+      { text: "Deep Scan", greyScale: [70, 80, 90, 100, 110] },
+    ],
+    []
+  );
+
+  const handleButtonClick = () => {
+    setHighestZIndex((prev) => prev + 1);
+  };
 
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -106,25 +120,37 @@ export default function ImageRecognition() {
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
 
           {itemsDetected.map((item, index) => (
-            <p
+            <PriceButton
               key={item.id + index}
-              style={{
-                position: "absolute",
-                width: "50px",
-                top: item.coords.y / multiplier + "px",
-                left: item.coords.x / multiplier + "px",
-                fontSize: "12px",
-                color: "white",
-                backgroundColor: "black",
-                border: "1px solid crimson",
-                padding: "2px 4px",
-                filter: "drop-shadow(3px 3px 3px black)",
-                transform: "translate(-40%, 0%)", // Para centrar el texto en las coordenadas
-              }}
-            >
-              {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
-            </p>
+              text={item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
+              multiplier={multiplier}
+              item={item}
+              highestZIndex={highestZIndex + 1} //Envía el próximo z-index disponible
+              onClick={handleButtonClick}
+            />
           ))}
+
+          {/* {false &&
+            itemsDetected.map((item, index) => (
+              <p
+                key={item.id + index}
+                style={{
+                  position: "absolute",
+                  width: "50px",
+                  top: item.coords.y / multiplier + "px",
+                  left: item.coords.x / multiplier + "px",
+                  fontSize: "12px",
+                  color: "white",
+                  backgroundColor: "black",
+                  border: "1px solid crimson",
+                  padding: "2px 4px",
+                  filter: "drop-shadow(3px 3px 3px black)",
+                  transform: "translate(-40%, 0%)", // Para centrar el texto en las coordenadas
+                }}
+              >
+                {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
+              </p>
+            ))} */}
         </div>
 
         {itemsDetected.length > 0 ? (
@@ -133,15 +159,11 @@ export default function ImageRecognition() {
           <p>Select a scan</p>
         )}
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-          <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 70])}>
-            Quick Scan
-          </button>
-          <button disabled={!inventoryImage} onClick={() => handleDetectItems([80, 90, 100])}>
-            Balanced Scan
-          </button>
-          <button disabled={!inventoryImage} onClick={() => handleDetectItems([70, 80, 90, 100, 110])}>
-            Deep Scan
-          </button>
+          {scanButtons.map((button) => (
+            <button key={button.text} className="scanButton" disabled={!inventoryImage} onClick={() => handleDetectItems(button.greyScale)}>
+              {button.text}
+            </button>
+          ))}
         </div>
       </div>
 
