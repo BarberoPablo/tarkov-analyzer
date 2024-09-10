@@ -52,6 +52,17 @@ export default function ImageRecognition() {
     setHighestZIndex((prev) => prev + 1);
   };
 
+  const handleButtonClose = (item: ItemData) => {
+    const index = itemsDetected.findIndex(
+      (itemDetected) => itemDetected.coords.x === item.coords.x && itemDetected.coords.y === item.coords.y
+    );
+    if (index > -1) {
+      const newItemsDetected = [...itemsDetected];
+      newItemsDetected.splice(index, 1);
+      setItemsDetected(newItemsDetected);
+    }
+  };
+
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
 
@@ -127,30 +138,9 @@ export default function ImageRecognition() {
               item={item}
               highestZIndex={highestZIndex + 1} //Envía el próximo z-index disponible
               onClick={handleButtonClick}
+              handleClose={handleButtonClose}
             />
           ))}
-
-          {/* {false &&
-            itemsDetected.map((item, index) => (
-              <p
-                key={item.id + index}
-                style={{
-                  position: "absolute",
-                  width: "50px",
-                  top: item.coords.y / multiplier + "px",
-                  left: item.coords.x / multiplier + "px",
-                  fontSize: "12px",
-                  color: "white",
-                  backgroundColor: "black",
-                  border: "1px solid crimson",
-                  padding: "2px 4px",
-                  filter: "drop-shadow(3px 3px 3px black)",
-                  transform: "translate(-40%, 0%)", // Para centrar el texto en las coordenadas
-                }}
-              >
-                {item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
-              </p>
-            ))} */}
         </div>
 
         {itemsDetected.length > 0 ? (
