@@ -38,6 +38,11 @@
   transition: border-color 0.25s;
 }
 
-button:hover {
+.scanButton:hover {
   border-color: #646cff;
+}
+
+.scanButton:focus,
+.scanButton:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
 }
