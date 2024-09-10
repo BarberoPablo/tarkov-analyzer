@@ -93,7 +93,7 @@ export default function ImageRecognition() {
   return (
     <div className="container">
       <div onPaste={handlePaste} className="inventoryContainer">
-        <p>Paste image here (click and CTRL + V)</p>
+        <p>Paste image here (left-click and CTRL + V)</p>
 
         <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
@@ -111,17 +111,24 @@ export default function ImageRecognition() {
           ))}
         </div>
 
-        {itemsDetected.length > 0 ? (
-          <p>{inventoryLoading ? "Loading..." : `Total Inventory Value: $${calculateTotalValue()}`}</p>
-        ) : (
-          <p>Select a scan</p>
-        )}
-        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-          {scanButtons.map((button) => (
-            <button key={button.text} className="scanButton" disabled={!inventoryImage} onClick={() => handleDetectItems(button.greyScale)}>
-              {button.text}
-            </button>
-          ))}
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          {itemsDetected.length > 0 ? (
+            <p>{inventoryLoading ? "Loading..." : `Total Inventory Value: $${calculateTotalValue()}`}</p>
+          ) : (
+            <p style={{ fontSize: "20px" }}>SELECT A SCAN</p>
+          )}
+          <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
+            {scanButtons.map((button) => (
+              <button
+                key={button.text}
+                className="scanButton"
+                disabled={!inventoryImage}
+                onClick={() => handleDetectItems(button.greyScale)}
+              >
+                {button.text}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
