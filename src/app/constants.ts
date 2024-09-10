@@ -3,7 +3,12 @@ import { FleaMarketItem } from "./types";
 /* 
 Letters that get confused
 e and o
+c and g
+s and e
+a and o (fcand => fcond)
 
+also try the word without "-"
+-t-plug, remove "-" at beggining and at the end
 
 */
 

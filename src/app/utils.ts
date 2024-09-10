@@ -1,3 +1,4 @@
+import { createCanvas, loadImage } from "canvas";
 import { allItems, specialWords } from "./constants";
 import { FleaMarketItem, ItemData } from "./types";
 
@@ -125,4 +126,75 @@ export function removeDuplicatedItems(items: ItemData[]) {
   });
 
   return uniqueItems;
+}
+
+export async function preprocessImageWithGreyScale(imageSrc: string, avgMin: number, multiplier: number) {
+  const img = await loadImage(imageSrc);
+  const newWidth = img.width * multiplier;
+  const newHeight = img.height * multiplier;
+
+  const canvas = createCanvas(newWidth, newHeight);
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+  const imageData = ctx.getImageData(0, 0, newWidth, newHeight);
+
+  const data = imageData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+    const threshold = avg > avgMin ? 0 : 255;
+    data[i] = data[i + 1] = data[i + 2] = threshold;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas.toDataURL();
+}
+
+export async function preprocessImageWithTargetColor(imageSrc: string, multiplier: number) {
+  //This method paints all the image to black except for the colors similar to the targetColor
+  const img = await loadImage(imageSrc);
+  const newWidth = img.width * multiplier;
+  const newHeight = img.height * multiplier;
+
+  const canvas = createCanvas(newWidth, newHeight);
+  const ctx = canvas.getContext("2d");
+
+  ctx.drawImage(img, 0, 0, newWidth, newHeight);
+
+  const imageData = ctx.getImageData(0, 0, newWidth, newHeight);
+
+  const data = imageData.data;
+
+  const targetColor = [140, 160, 160]; //203 210 201
+  const tolerance = 90;
+
+  const [targetR, targetG, targetB] = targetColor;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    const distance = Math.sqrt(Math.pow(r - targetR, 2) + Math.pow(g - targetG, 2) + Math.pow(b - targetB, 2));
+
+    if (distance > tolerance) {
+      data[i] = data[i + 1] = data[i + 2] = 0; // Black
+    }
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  return canvas.toDataURL();
+}
+
+export async function preprocessImage(imageSrc: string, multiplier: number, greyScale: number[]) {
+  const greyScalePromises = greyScale.map((filter) => preprocessImageWithGreyScale(imageSrc, filter, multiplier));
+  const targetColorPromise = preprocessImageWithTargetColor(imageSrc, multiplier);
+
+  const imagesWithFilters = await Promise.all([...greyScalePromises, targetColorPromise]);
+
+  return imagesWithFilters;
 }

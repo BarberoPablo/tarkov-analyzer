@@ -1,52 +1,22 @@
-import { createCanvas, loadImage } from "canvas";
-import { ClipboardEvent, useMemo, useState } from "react";
+import { ClipboardEvent, useState } from "react";
 import Tesseract from "tesseract.js";
 import { ItemData } from "../types";
-import { findItems, removeDuplicatedItems } from "../utils";
+import { findItems, preprocessImage, removeDuplicatedItems } from "../utils";
 import PriceButton from "./components/priceButton";
 import "./styles.css";
 
 const multiplier = 3;
-
-const preprocessImage = async (imageSrc: string, avgMin: number) => {
-  const img = await loadImage(imageSrc);
-  const newWidth = img.width * multiplier;
-  const newHeight = img.height * multiplier;
-
-  const canvas = createCanvas(newWidth, newHeight);
-  const ctx = canvas.getContext("2d");
-
-  ctx.drawImage(img, 0, 0, newWidth, newHeight);
-
-  const imageData = ctx.getImageData(0, 0, newWidth, newHeight);
-
-  const data = imageData.data;
-
-  for (let i = 0; i < data.length; i += 4) {
-    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    const threshold = avg > avgMin ? 0 : 255;
-    data[i] = data[i + 1] = data[i + 2] = threshold;
-  }
-
-  ctx.putImageData(imageData, 0, 0);
-
-  return canvas.toDataURL();
-};
+const scanButtons = [
+  { text: "Quick scan", greyScale: [80, 70] },
+  { text: "Balanced Scan", greyScale: [80, 90, 100] },
+  { text: "Deep Scan", greyScale: [70, 80, 90, 100, 110] },
+];
 
 export default function ImageRecognition() {
   const [inventoryImage, setInventoryImage] = useState<string | null>(null);
   const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [highestZIndex, setHighestZIndex] = useState(0);
-
-  const scanButtons = useMemo(
-    () => [
-      { text: "Quick scan", greyScale: [80, 70] },
-      { text: "Balanced Scan", greyScale: [80, 90, 100] },
-      { text: "Deep Scan", greyScale: [70, 80, 90, 100, 110] },
-    ],
-    []
-  );
 
   const handleButtonClick = () => {
     setHighestZIndex((prev) => prev + 1);
@@ -89,8 +59,7 @@ export default function ImageRecognition() {
     if (inventoryImage) {
       setInventoryLoading(true);
       try {
-        const imagesWithFilters = await Promise.all(greyScale.map((filter) => preprocessImage(inventoryImage, filter)));
-
+        const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, greyScale);
         const itemsFromImages: Tesseract.Word[][] = [];
 
         // Usar for...of para manejar la asincronía correctamente
@@ -99,8 +68,7 @@ export default function ImageRecognition() {
           itemsFromImages.push(result.data.words);
         }
 
-        //setInventoryImage(imagesWithFilters[1]);
-
+        //setInventoryImage(imagesWithFilters[0]);
         const detectedItems = findItems(itemsFromImages.flat());
         const finalItems = removeDuplicatedItems(detectedItems);
 
@@ -127,7 +95,7 @@ export default function ImageRecognition() {
       <div onPaste={handlePaste} className="inventoryContainer">
         <p>Paste image here (click and CTRL + V)</p>
 
-        <div style={{ position: "relative", display: "block", justifyContent: "center", margin: "0 auto" }}>
+        <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
 
           {itemsDetected.map((item, index) => (
