@@ -1,0 +1,48 @@
+.container {
+  width: 100%;
+  height: 95vh;
+  max-height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (max-width: 1250px) {
+  .container {
+    flex-direction: column;
+  }
+}
+
+.inventoryContainer {
+  width: 50%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  border: 2px dashed #ccc;
+  padding: 20px;
+  text-align: center;
+  overflow: auto;
+}
+
+.scanButton {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+.scanButton:hover {
+  border-color: #646cff;
+}
+
+.scanButton:focus,
+.scanButton:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
