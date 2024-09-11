@@ -62,22 +62,23 @@ export default function ImageRecognition() {
       setInventoryLoading(true);
       try {
         const items = allItems?.length === 0 ? await fetchItems() : allItems;
-
+        console.log({ items });
         if (allItems?.length === 0) {
           setAllItems(items);
         }
-        const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, greyScale);
-        const itemsFromImages: Tesseract.Word[][] = [];
-
-        // Usar for...of para manejar la asincronía correctamente
-        for (const image of imagesWithFilters) {
-          const result = await Tesseract.recognize(image);
-          itemsFromImages.push(result.data.words);
-        }
-
-        //setInventoryImage(imagesWithFilters[0]);
 
         if (items) {
+          const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, greyScale);
+          const itemsFromImages: Tesseract.Word[][] = [];
+
+          // Usar for...of para manejar la asincronía correctamente
+          for (const image of imagesWithFilters) {
+            const result = await Tesseract.recognize(image);
+            itemsFromImages.push(result.data.words);
+          }
+
+          //setInventoryImage(imagesWithFilters[0]);
+
           const detectedItems = findItems(itemsFromImages.flat(), items);
           const finalItems = removeDuplicatedItems(detectedItems);
 
