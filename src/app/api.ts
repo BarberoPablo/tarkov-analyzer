@@ -8,5 +8,6 @@ export const fetchItems = async () => {
     return response.data as FleaMarketItem[];
   } catch (error) {
     console.error("Error fetching items:", error);
+    return [];
   }
 };

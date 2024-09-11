@@ -3,7 +3,8 @@ import Tesseract from "tesseract.js";
 import { fetchItems } from "../api";
 import { FleaMarketItem, ItemData } from "../types";
 import { findItems, preprocessImage, removeDuplicatedItems } from "../utils";
-import PriceButton from "./components/priceButton";
+import LoadingSpinner from "./components/LoadingSpinner";
+import PriceButton from "./components/PriceButton";
 import "./styles.css";
 
 const multiplier = 3;
@@ -16,9 +17,9 @@ const scanButtons = [
 export default function ImageRecognition() {
   const [inventoryImage, setInventoryImage] = useState<string | null>(null);
   const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
-  const [inventoryLoading, setInventoryLoading] = useState(false);
   const [highestZIndex, setHighestZIndex] = useState(0);
-  const [allItems, setAllItems] = useState<FleaMarketItem[] | undefined>([]);
+  const [allItems, setAllItems] = useState<FleaMarketItem[]>([]);
+  const [loadingMsg, setLoadingMsg] = useState<string>("");
 
   const handleButtonClick = () => {
     setHighestZIndex((prev) => prev + 1);
@@ -59,10 +60,19 @@ export default function ImageRecognition() {
 
   const handleDetectItems = async (greyScale: number[]) => {
     if (inventoryImage) {
-      setInventoryLoading(true);
       try {
-        const items = allItems?.length === 0 ? await fetchItems() : allItems;
+        let items: FleaMarketItem[] = [];
+        if (allItems && allItems?.length === 0) {
+          setLoadingMsg("Getting items prices");
+          items = await fetchItems();
+        } else {
+          items = allItems;
+        }
+
+        setLoadingMsg("Analyzing image");
+
         console.log({ items });
+
         if (allItems?.length === 0) {
           setAllItems(items);
         }
@@ -85,11 +95,11 @@ export default function ImageRecognition() {
           console.log({ finalItems });
 
           setItemsDetected(finalItems);
+          setLoadingMsg("");
         }
       } catch (error) {
         console.error("Error al detectar el texto:", error);
       }
-      setInventoryLoading(false);
     }
   };
 
@@ -123,17 +133,22 @@ export default function ImageRecognition() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {itemsDetected.length > 0 ? (
-            <p>{inventoryLoading ? "Loading..." : `Total Inventory Value: $${calculateTotalValue()}`}</p>
+          {loadingMsg ? (
+            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: "16px" }}>
+              <LoadingSpinner />
+              <p style={{ fontSize: "20px" }}>{loadingMsg}</p>
+            </div>
           ) : (
-            <p style={{ fontSize: "20px" }}>SELECT A SCAN</p>
+            itemsDetected.length > 0 && `Total Inventory Value: $${calculateTotalValue()}`
           )}
+          {!loadingMsg && <p style={{ fontSize: "20px" }}>SELECT A SCAN</p>}
+
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
             {scanButtons.map((button) => (
               <button
                 key={button.text}
                 className="scanButton"
-                disabled={!inventoryImage}
+                disabled={!inventoryImage || !!loadingMsg}
                 onClick={() => handleDetectItems(button.greyScale)}
               >
                 {button.text}
