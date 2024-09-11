@@ -1,11 +1,11 @@
 import { createCanvas, loadImage } from "canvas";
-import { allItems, specialWords } from "./constants";
+import { specialWords } from "./constants";
 import { FleaMarketItem, ItemData } from "./types";
 
 //Compare with shortName and return the full name (name)
 const coordThreshold = 90;
 
-export function findItems(words: Tesseract.Word[]) {
+export function findItems(words: Tesseract.Word[], allItems: FleaMarketItem[]) {
   const detected: ItemData[] = [];
   let itemFound: FleaMarketItem | undefined = undefined;
 

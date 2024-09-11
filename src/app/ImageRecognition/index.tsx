@@ -1,6 +1,7 @@
 import { ClipboardEvent, useState } from "react";
 import Tesseract from "tesseract.js";
-import { ItemData } from "../types";
+import { fetchItems } from "../api";
+import { FleaMarketItem, ItemData } from "../types";
 import { findItems, preprocessImage, removeDuplicatedItems } from "../utils";
 import PriceButton from "./components/priceButton";
 import "./styles.css";
@@ -17,6 +18,7 @@ export default function ImageRecognition() {
   const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
   const [inventoryLoading, setInventoryLoading] = useState(false);
   const [highestZIndex, setHighestZIndex] = useState(0);
+  const [allItems, setAllItems] = useState<FleaMarketItem[] | undefined>([]);
 
   const handleButtonClick = () => {
     setHighestZIndex((prev) => prev + 1);
@@ -59,6 +61,11 @@ export default function ImageRecognition() {
     if (inventoryImage) {
       setInventoryLoading(true);
       try {
+        const items = allItems?.length === 0 ? await fetchItems() : allItems;
+
+        if (allItems?.length === 0) {
+          setAllItems(items);
+        }
         const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, greyScale);
         const itemsFromImages: Tesseract.Word[][] = [];
 
@@ -69,12 +76,15 @@ export default function ImageRecognition() {
         }
 
         //setInventoryImage(imagesWithFilters[0]);
-        const detectedItems = findItems(itemsFromImages.flat());
-        const finalItems = removeDuplicatedItems(detectedItems);
 
-        console.log({ finalItems });
+        if (items) {
+          const detectedItems = findItems(itemsFromImages.flat(), items);
+          const finalItems = removeDuplicatedItems(detectedItems);
 
-        setItemsDetected(finalItems);
+          console.log({ finalItems });
+
+          setItemsDetected(finalItems);
+        }
       } catch (error) {
         console.error("Error al detectar el texto:", error);
       }

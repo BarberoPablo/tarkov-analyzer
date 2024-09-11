@@ -1,4 +1,4 @@
-import { FleaMarketItem } from "./types";
+//import { FleaMarketItem } from "./types";
 
 /* 
 Letters that get confused
@@ -113,7 +113,7 @@ https://api.tarkov.dev/
 
 */
 
-export const allItems: FleaMarketItem[] = [
+/* export const allItems: FleaMarketItem[] = [
   {
     id: "5447a9cd4bdc2dbd208b4567",
     name: "Colt M4A1 5.56x45 assault rifle",
@@ -30459,3 +30459,4 @@ export const allItems: FleaMarketItem[] = [
     lastLowPrice: null,
   },
 ];
+ */
