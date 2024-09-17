@@ -1,5 +1,5 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", Segoe UI Symbol, "Noto Color Emoji";
   line-height: 1.5;
   font-weight: 400;
 
@@ -21,6 +21,7 @@ body {
   min-height: 100vh;
 }
 
+/* 
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -34,4 +35,4 @@ body {
   button {
     background-color: #f9f9f9;
   }
-}
+} */

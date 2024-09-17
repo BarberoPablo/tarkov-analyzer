@@ -1,6 +1,10 @@
+html {
+  background-color: rgb(17 24 39)
+}
+
 .container {
   width: 100%;
-  height: 95vh;
+  height: 90vh;
   max-height: 100%;
   display: flex;
   flex-direction: row;
@@ -9,24 +13,52 @@
   gap: 20px;
 }
 
+
 @media (max-width: 1250px) {
   .container {
     flex-direction: column;
-    /* height: 1000px; */
-    width: 100%
+    width: 100%;
+    margin-top: 40px;
+    height: 100%;
   }
+
+
 }
 
 .inventoryContainer {
   width: 60%;
-  height: 90%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 20px;
   text-align: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
   overflow: auto;
-  border: 1px solid #000;
+  border-radius: 8px;
+  background-color: rgb(31 41 55)
+}
+
+@media (max-width: 1250px) {
+  .inventoryContainer {
+    width: 100%;
+    height: 400px
+  }
+}
+
+.market {
+  width: 900px;
+  height: 100%;
+}
+
+@media (max-width: 1250px) {
+  .market {
+    width: 100%;
+    height: 600px
+  }
 }
 
 .inventoryContainer::-webkit-scrollbar {

@@ -198,3 +198,12 @@ export async function preprocessImage(imageSrc: string, multiplier: number, grey
 
   return imagesWithFilters;
 }
+
+export function calculateTotalValue(items: ItemData[]) {
+  let total = 0;
+  items.forEach((item) => {
+    console.log({ item });
+    total += item.avg24hPrice || 0;
+  });
+  return items.length > 0 ? `Total Inventory Value: $${total.toLocaleString()}` : "No items detected";
+}
