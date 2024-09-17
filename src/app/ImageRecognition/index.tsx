@@ -138,60 +138,61 @@ export default function ImageRecognition() {
 
   return (
     <div className="container">
-      <div onPaste={handlePaste} className="inventoryContainer">
-        <span>Paste image here (Left-Click and CTRL + V)</span>
-        <div className="testImagesContainer">
-          <button disabled={loadingTestImage.includes("1")} onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png", "1")}>
-            Test image 1
-          </button>
-          <button disabled={loadingTestImage.includes("2")} onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png", "2")}>
-            Test image 2
-          </button>
-        </div>
-        {loadingTestImage && !inventoryImage && <span>Loading image...</span>}
-
-        <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
-          {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
-
-          {itemsDetected.items.map((item, index) => (
-            <PriceButton
-              key={item.id + index}
-              text={item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
-              multiplier={multiplier}
-              item={item}
-              highestZIndex={highestZIndex + 1} //Envía el próximo z-index disponible
-              onClick={handleButtonClick}
-              handleClose={handleButtonClose}
-            />
-          ))}
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "24px" }}>
-            {loadingMsg ? (
-              <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: "16px" }}>
-                <LoadingSpinner />
-                <span style={{ fontSize: "20px" }}>{loadingMsg}</span>
-              </div>
-            ) : (
-              <span>{itemsDetected.message}</span>
-            )}
-
-            {!loadingMsg && <span style={{ fontSize: "20px" }}>SELECT A SCAN</span>}
+      <div className="inventoryContainer">
+        <div onPaste={handlePaste} className="pasteContainer">
+          <span>Paste image here (Left-Click and CTRL + V)</span>
+          <div className="testImagesContainer">
+            <button disabled={loadingTestImage.includes("1")} onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png", "1")}>
+              Test image 1
+            </button>
+            <button disabled={loadingTestImage.includes("2")} onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png", "2")}>
+              Test image 2
+            </button>
           </div>
+          {loadingTestImage && !inventoryImage && <span>Loading image...</span>}
 
-          <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-            {scanButtons.map((button, index) => (
-              <button
-                key={button.text}
-                className="scanButton"
-                disabled={!inventoryImage || !!loadingMsg || lastScanSelected === index}
-                onClick={() => handleDetectItems(button.grayScale, index)}
-              >
-                {button.text}
-              </button>
+          <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
+            {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
+
+            {itemsDetected.items.map((item, index) => (
+              <PriceButton
+                key={item.id + index}
+                text={item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
+                multiplier={multiplier}
+                item={item}
+                highestZIndex={highestZIndex + 1} //Envía el próximo z-index disponible
+                onClick={handleButtonClick}
+                handleClose={handleButtonClose}
+              />
             ))}
           </div>
+
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "24px" }}>
+              {loadingMsg ? (
+                <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: "16px" }}>
+                  <LoadingSpinner />
+                  <span style={{ fontSize: "20px" }}>{loadingMsg}</span>
+                </div>
+              ) : (
+                <span>{itemsDetected.message}</span>
+              )}
+
+              {!loadingMsg && <span style={{ fontSize: "20px" }}>SELECT A SCAN</span>}
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around", paddingTop: "8px" }}>
+          {scanButtons.map((button, index) => (
+            <button
+              key={button.text}
+              className="scanButton"
+              disabled={!inventoryImage || !!loadingMsg || lastScanSelected === index}
+              onClick={() => handleDetectItems(button.grayScale, index)}
+            >
+              {button.text}
+            </button>
+          ))}
         </div>
       </div>
 
