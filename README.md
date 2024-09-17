@@ -1,60 +1,37 @@
-To update gh-pages:
+# Escape From Tarkov Inventory Item Detector
+This project is a React-based image recognition application for Escape From Tarkov. It allows users to paste a screenshot of their in-game inventory and automatically detect the items within it, along with their prices from the Flea Market. Below is a breakdown of its functionality and key features:
 
-npm run build
+## Main Features:
 
-git add dist -f
+### 1. Item Detection in Images:
+- Users can paste a screenshot of their inventory (using Ctrl + V).
+- The image is processed, and the items in the image are detected using Tesseract.js for Optical Character Recognition (OCR).
+- Three levels of image scanning are available (Quick Scan, Balanced Scan, and Deep Scan), each applying different grayscale filters to improve detection accuracy.
+  
+### 2. Image Preprocessing:
 
-git commit -m "dist folder"
+- Before being analyzed by Tesseract, the images are filtered in grayscale to improve the detection quality.
+- A multiplier is applied to scale up the images, increasing the OCR precision.
+  
+### 3. Duplicate Item Detection and Removal:
 
-git subtree push --prefix dist origin gh-pages
+- After items are detected, duplicates are removed, and the total value of the detected items is calculated using price data fetched from a market API.
+  
+### 4. User Interface:
 
-# React + TypeScript + Vite
+- Detected items are displayed on top of the inventory image with interactive price buttons. These buttons show the name and price of each item and can be manually closed if needed.
+- The application provides the option to test predefined sample images to simulate the detection process.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+### 5. Data Loading and State Management:
 
-Currently, two official plugins are available:
+- Item prices are fetched from an external API via the fetchItems function, which is only called if the prices have not yet been loaded.
+- The app uses state to store the inventory image, detected items, the index of the last scan type used, and a loading message while the image is being analyzed.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Key Components and Features:
+- Tesseract.js: Used for recognizing text in the inventory images.
+- Image Preprocessing: Grayscale filters and image scaling to enhance OCR accuracy.
+- Interactive Price Buttons: Detected items are displayed with floating buttons that show their names and prices, which can be individually closed.
+- If a lighter scan filter is applied first (e.g., Quick Scan) and then a heavier filter (e.g., Deep Scan) is used, the heavier filter will only analyze the image using the grayscale values that were not already processed by the previous scan. This optimization speeds up the scanning process by avoiding redundant image analysis. Additionally, the results from the new scan are combined with those from the previous scan, ensuring that all detected items are accounted for. This merging process only occurs if the image hasn't changed and no price tags have been closed, as closing tags would invalidate the previous scan's data.
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
-
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from "eslint-plugin-react";
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: "18.3" } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs["jsx-runtime"].rules,
-  },
-});
-```
+## Summary:
+This application provides an efficient way to detect items and retrieve their prices by using OCR on screenshots of Escape From Tarkov inventories. It allows players to quickly assess the value of their items and make informed selling decisions.
