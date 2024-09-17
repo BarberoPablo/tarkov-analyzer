@@ -2,7 +2,7 @@ import { ClipboardEvent, useState } from "react";
 import Tesseract from "tesseract.js";
 import { fetchItems } from "../api";
 import { FleaMarketItem, ItemData } from "../types";
-import { findItems, preprocessImage, removeDuplicatedItems } from "../utils";
+import { calculateTotalValue, findItems, preprocessImage, removeDuplicatedItems } from "../utils";
 import LoadingSpinner from "./components/LoadingSpinner";
 import PriceButton from "./components/PriceButton";
 import "./styles.css";
@@ -16,32 +16,37 @@ const scanButtons = [
 
 export default function ImageRecognition() {
   const [inventoryImage, setInventoryImage] = useState<string | null>(null);
-  const [itemsDetected, setItemsDetected] = useState<ItemData[]>([]);
+  const [itemsDetected, setItemsDetected] = useState<{ message: string; items: ItemData[] }>({
+    message: "",
+    items: [],
+  });
   const [highestZIndex, setHighestZIndex] = useState(0);
   const [allItems, setAllItems] = useState<FleaMarketItem[]>([]);
   const [loadingMsg, setLoadingMsg] = useState<string>("");
+
+  console.log({ itemsDetected });
 
   const handleButtonClick = () => {
     setHighestZIndex((prev) => prev + 1);
   };
 
   const handleButtonClose = (item: ItemData) => {
-    const index = itemsDetected.findIndex(
+    const index = itemsDetected.items.findIndex(
       (itemDetected) => itemDetected.coords.x === item.coords.x && itemDetected.coords.y === item.coords.y
     );
     if (index > -1) {
-      const newItemsDetected = [...itemsDetected];
+      const newItemsDetected = [...itemsDetected.items];
       newItemsDetected.splice(index, 1);
-      setItemsDetected(newItemsDetected);
+      setItemsDetected({ message: calculateTotalValue(newItemsDetected), items: newItemsDetected });
     }
   };
 
   const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
     event.preventDefault();
-
-    setItemsDetected([]);
-
     const userInventory = event.clipboardData.items;
+
+    setItemsDetected({ message: "", items: [] });
+
     for (const item of userInventory) {
       if (item.type.indexOf("image") !== -1) {
         const blob = item.getAsFile();
@@ -91,10 +96,12 @@ export default function ImageRecognition() {
 
           const detectedItems = findItems(itemsFromImages.flat(), items);
           const finalItems = removeDuplicatedItems(detectedItems);
+          const message = calculateTotalValue(finalItems);
 
           console.log({ finalItems });
+          console.log({ message });
 
-          setItemsDetected(finalItems);
+          setItemsDetected({ message, items: finalItems });
           setLoadingMsg("");
         }
       } catch (error) {
@@ -103,23 +110,24 @@ export default function ImageRecognition() {
     }
   };
 
-  const calculateTotalValue = () => {
-    let total = 0;
-    itemsDetected.forEach((item) => {
-      total += item.avg24hPrice || 0;
-    });
-    return total.toLocaleString();
+  const handleTestImage = (src: string) => {
+    setInventoryImage(src);
   };
 
   return (
     <div className="container">
       <div onPaste={handlePaste} className="inventoryContainer">
-        <p>Paste image here (left-click and CTRL + V)</p>
+        <span>Paste image here (left-click and CTRL + V)</span>
+
+        <div className="testImagesContainer">
+          <button onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png")}>Test image 1</button>
+          <button onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png")}>Test image 2</button>
+        </div>
 
         <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
 
-          {itemsDetected.map((item, index) => (
+          {itemsDetected.items.map((item, index) => (
             <PriceButton
               key={item.id + index}
               text={item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
@@ -133,15 +141,18 @@ export default function ImageRecognition() {
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          {loadingMsg ? (
-            <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: "16px" }}>
-              <LoadingSpinner />
-              <p style={{ fontSize: "20px" }}>{loadingMsg}</p>
-            </div>
-          ) : (
-            itemsDetected.length > 0 && `Total Inventory Value: $${calculateTotalValue()}`
-          )}
-          {!loadingMsg && <p style={{ fontSize: "20px" }}>SELECT A SCAN</p>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: "24px" }}>
+            {loadingMsg ? (
+              <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: "16px" }}>
+                <LoadingSpinner />
+                <span style={{ fontSize: "20px" }}>{loadingMsg}</span>
+              </div>
+            ) : (
+              <span>{itemsDetected.message}</span>
+            )}
+
+            {!loadingMsg && <span style={{ fontSize: "20px" }}>SELECT A SCAN</span>}
+          </div>
 
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
             {scanButtons.map((button) => (
@@ -158,7 +169,7 @@ export default function ImageRecognition() {
         </div>
       </div>
 
-      <div style={{ width: 900, height: "100%" }}>
+      <div className="market">
         <iframe
           src="https://tarkov-market.com/"
           title="Tarkov Market"
