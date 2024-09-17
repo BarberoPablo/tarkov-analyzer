@@ -9,9 +9,9 @@ import "./styles.css";
 
 const multiplier = 3;
 const scanButtons = [
-  { text: "Quick scan", greyScale: [80, 70] },
-  { text: "Balanced Scan", greyScale: [80, 90, 100] },
-  { text: "Deep Scan", greyScale: [70, 80, 90, 100, 110] },
+  { text: "Quick Scan", grayScale: [70, 80] },
+  { text: "Balanced Scan", grayScale: [80, 90, 100] },
+  { text: "Deep Scan", grayScale: [70, 80, 90, 100, 110] },
 ];
 
 export default function ImageRecognition() {
@@ -20,11 +20,11 @@ export default function ImageRecognition() {
     message: "",
     items: [],
   });
+  const [lastScanSelected, setLastScanSelected] = useState(-1); //Avoid analyzing with same filters if image was previously analized
   const [highestZIndex, setHighestZIndex] = useState(0);
   const [allItems, setAllItems] = useState<FleaMarketItem[]>([]);
   const [loadingMsg, setLoadingMsg] = useState<string>("");
-
-  console.log({ itemsDetected });
+  const [loadingTestImage, setLoadingTestImage] = useState<string>("");
 
   const handleButtonClick = () => {
     setHighestZIndex((prev) => prev + 1);
@@ -35,6 +35,7 @@ export default function ImageRecognition() {
       (itemDetected) => itemDetected.coords.x === item.coords.x && itemDetected.coords.y === item.coords.y
     );
     if (index > -1) {
+      setLastScanSelected(-1);
       const newItemsDetected = [...itemsDetected.items];
       newItemsDetected.splice(index, 1);
       setItemsDetected({ message: calculateTotalValue(newItemsDetected), items: newItemsDetected });
@@ -45,8 +46,6 @@ export default function ImageRecognition() {
     event.preventDefault();
     const userInventory = event.clipboardData.items;
 
-    setItemsDetected({ message: "", items: [] });
-
     for (const item of userInventory) {
       if (item.type.indexOf("image") !== -1) {
         const blob = item.getAsFile();
@@ -55,6 +54,8 @@ export default function ImageRecognition() {
           reader.onload = (event) => {
             if (event.target?.result) {
               setInventoryImage(event.target.result as string);
+              setItemsDetected({ message: "", items: [] });
+              setLastScanSelected(-1);
             }
           };
           reader.readAsDataURL(blob);
@@ -63,9 +64,17 @@ export default function ImageRecognition() {
     }
   };
 
-  const handleDetectItems = async (greyScale: number[]) => {
-    if (inventoryImage) {
-      try {
+  const handleDetectItems = async (grayScale: number[], scanTypeId: number) => {
+    let filteredGrayScale = grayScale;
+    try {
+      if (inventoryImage) {
+        //Selecting a lighter Scan does not filter the gray scale, going foward it does so it is faster
+        if (lastScanSelected > -1 && lastScanSelected < scanTypeId) {
+          console.log(filteredGrayScale);
+          filteredGrayScale = filteredGrayScale.filter((scale) => !scanButtons[lastScanSelected].grayScale.includes(scale));
+          console.log(filteredGrayScale);
+        }
+
         let items: FleaMarketItem[] = [];
         if (allItems && allItems?.length === 0) {
           setLoadingMsg("Getting items prices");
@@ -76,14 +85,12 @@ export default function ImageRecognition() {
 
         setLoadingMsg("Analyzing image");
 
-        console.log({ items });
-
         if (allItems?.length === 0) {
           setAllItems(items);
         }
 
-        if (items) {
-          const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, greyScale);
+        if (items && filteredGrayScale.length > 0) {
+          const imagesWithFilters = await preprocessImage(inventoryImage, multiplier, filteredGrayScale);
           const itemsFromImages: Tesseract.Word[][] = [];
 
           // Usar for...of para manejar la asincronía correctamente
@@ -95,34 +102,53 @@ export default function ImageRecognition() {
           //setInventoryImage(imagesWithFilters[0]);
 
           const detectedItems = findItems(itemsFromImages.flat(), items);
-          const finalItems = removeDuplicatedItems(detectedItems);
+          const finalItems = removeDuplicatedItems(detectedItems.concat(itemsDetected.items));
           const message = calculateTotalValue(finalItems);
 
-          console.log({ finalItems });
-          console.log({ message });
-
           setItemsDetected({ message, items: finalItems });
-          setLoadingMsg("");
+          setLastScanSelected(scanTypeId);
         }
-      } catch (error) {
-        console.error("Error al detectar el texto:", error);
+        setLoadingMsg("");
       }
+    } catch (error) {
+      console.error("Error al detectar el texto:", error);
     }
   };
 
-  const handleTestImage = (src: string) => {
-    setInventoryImage(src);
+  const handleTestImage = (src: string, id: string) => {
+    if (!loadingTestImage.includes(id) && src) {
+      setLastScanSelected(-1);
+      setInventoryImage(null);
+      setItemsDetected({ message: "", items: [] });
+      setLoadingTestImage("Loading image" + id);
+
+      fetch(src)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setInventoryImage(reader.result as string); // Data URL
+            //setLoadingTestImage("");
+          };
+          reader.readAsDataURL(blob);
+        })
+        .catch((error) => console.error("Error al convertir la imagen:", error));
+    }
   };
 
   return (
     <div className="container">
       <div onPaste={handlePaste} className="inventoryContainer">
-        <span>Paste image here (left-click and CTRL + V)</span>
-
+        <span>Paste image here (Left-Click and CTRL + V)</span>
         <div className="testImagesContainer">
-          <button onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png")}>Test image 1</button>
-          <button onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png")}>Test image 2</button>
+          <button disabled={loadingTestImage.includes("1")} onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png", "1")}>
+            Test image 1
+          </button>
+          <button disabled={loadingTestImage.includes("2")} onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png", "2")}>
+            Test image 2
+          </button>
         </div>
+        {loadingTestImage && !inventoryImage && <span>Loading image...</span>}
 
         <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
@@ -155,12 +181,12 @@ export default function ImageRecognition() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-around" }}>
-            {scanButtons.map((button) => (
+            {scanButtons.map((button, index) => (
               <button
                 key={button.text}
                 className="scanButton"
-                disabled={!inventoryImage || !!loadingMsg}
-                onClick={() => handleDetectItems(button.greyScale)}
+                disabled={!inventoryImage || !!loadingMsg || lastScanSelected === index}
+                onClick={() => handleDetectItems(button.grayScale, index)}
               >
                 {button.text}
               </button>

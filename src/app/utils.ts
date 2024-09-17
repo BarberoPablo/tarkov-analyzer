@@ -128,7 +128,7 @@ export function removeDuplicatedItems(items: ItemData[]) {
   return uniqueItems;
 }
 
-export async function preprocessImageWithGreyScale(imageSrc: string, avgMin: number, multiplier: number) {
+export async function preprocessImageWithGrayScale(imageSrc: string, avgMin: number, multiplier: number) {
   const img = await loadImage(imageSrc);
   const newWidth = img.width * multiplier;
   const newHeight = img.height * multiplier;
@@ -190,11 +190,11 @@ export async function preprocessImageWithTargetColor(imageSrc: string, multiplie
   return canvas.toDataURL();
 }
 
-export async function preprocessImage(imageSrc: string, multiplier: number, greyScale: number[]) {
-  const greyScalePromises = greyScale.map((filter) => preprocessImageWithGreyScale(imageSrc, filter, multiplier));
+export async function preprocessImage(imageSrc: string, multiplier: number, grayScale: number[]) {
+  const grayScalePromises = grayScale.map((filter) => preprocessImageWithGrayScale(imageSrc, filter, multiplier));
   const targetColorPromise = preprocessImageWithTargetColor(imageSrc, multiplier);
 
-  const imagesWithFilters = await Promise.all([...greyScalePromises, targetColorPromise]);
+  const imagesWithFilters = await Promise.all([...grayScalePromises, targetColorPromise]);
 
   return imagesWithFilters;
 }
@@ -202,7 +202,6 @@ export async function preprocessImage(imageSrc: string, multiplier: number, grey
 export function calculateTotalValue(items: ItemData[]) {
   let total = 0;
   items.forEach((item) => {
-    console.log({ item });
     total += item.avg24hPrice || 0;
   });
   return items.length > 0 ? `Total Inventory Value: $${total.toLocaleString()}` : "No items detected";
