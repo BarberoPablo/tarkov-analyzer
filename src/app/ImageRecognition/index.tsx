@@ -110,10 +110,19 @@ export default function ImageRecognition() {
     }
   };
 
+  const handleTestImage = (src: string) => {
+    setInventoryImage(src);
+  };
+
   return (
     <div className="container">
       <div onPaste={handlePaste} className="inventoryContainer">
         <span>Paste image here (left-click and CTRL + V)</span>
+
+        <div className="testImagesContainer">
+          <button onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png")}>Test image 1</button>
+          <button onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png")}>Test image 2</button>
+        </div>
 
         <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
           {inventoryImage && <img src={inventoryImage} alt="user inventory" />}
