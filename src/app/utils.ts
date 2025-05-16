@@ -202,7 +202,7 @@ export async function preprocessImage(imageSrc: string, multiplier: number, gray
 export function calculateTotalValue(items: ItemData[]) {
   let total = 0;
   items.forEach((item) => {
-    total += item.avg24hPrice || 0;
+    total += item.lastLowPrice || 0;
   });
   return items.length > 0 ? `Total Inventory Value: $${total.toLocaleString()}` : "No items detected";
 }

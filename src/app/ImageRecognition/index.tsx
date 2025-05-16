@@ -141,14 +141,9 @@ export default function ImageRecognition() {
       <div className="inventoryContainer">
         <div onPaste={handlePaste} className="pasteContainer">
           <span>Paste image here (Left-Click and CTRL + V)</span>
-          <div className="testImagesContainer">
-            <button disabled={loadingTestImage.includes("1")} onClick={() => handleTestImage("https://i.ibb.co/cJk6dmb/inv.png", "1")}>
-              Test image 1
-            </button>
-            <button disabled={loadingTestImage.includes("2")} onClick={() => handleTestImage("https://i.ibb.co/bd9tfkX/inv2.png", "2")}>
-              Test image 2
-            </button>
-          </div>
+
+          <TestImageButtons handleTestImage={handleTestImage} loadingTestImage={loadingTestImage} />
+
           {loadingTestImage && !inventoryImage && <span>Loading image...</span>}
 
           <div style={{ position: "relative", display: "block", margin: "0 auto" }}>
@@ -157,7 +152,7 @@ export default function ImageRecognition() {
             {itemsDetected.items.map((item, index) => (
               <PriceButton
                 key={item.id + index}
-                text={item.avg24hPrice ? `${item.shortName + " $" + item.avg24hPrice.toLocaleString()}` : "Cant sell"}
+                text={item.lastLowPrice ? `${item.shortName + " $" + item.lastLowPrice.toLocaleString()}` : "Cant sell"}
                 multiplier={multiplier}
                 item={item}
                 highestZIndex={highestZIndex + 1} //Envía el próximo z-index disponible
@@ -209,3 +204,32 @@ export default function ImageRecognition() {
     </div>
   );
 }
+
+const TestImageButtons = ({
+  loadingTestImage,
+  handleTestImage,
+}: {
+  loadingTestImage: string;
+  handleTestImage: (src: string, id: string) => void;
+}) => {
+  const images = [
+    "https://i.ibb.co/cJk6dmb/inv.png",
+    "https://i.ibb.co/bd9tfkX/inv2.png",
+    "https://i.postimg.cc/kXsSXwS8/image.png",
+    "https://i.postimg.cc/436ss27R/inventory.png",
+  ];
+
+  return (
+    <div className="testImagesContainer">
+      {images.map((src, index) => (
+        <button
+          key={index}
+          disabled={loadingTestImage.includes((index + 1).toString())}
+          onClick={() => handleTestImage(src, (index + 1).toString())}
+        >
+          Test image {index + 1}
+        </button>
+      ))}
+    </div>
+  );
+};
